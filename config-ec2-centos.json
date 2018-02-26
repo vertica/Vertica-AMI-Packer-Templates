@@ -1,0 +1,10 @@
+{
+    "vertica_version": "9.1.0",
+    "os_name": "CentOS",
+    "os_version": "7.4",
+    "os_distro_id": "rhel",
+    "ssh_username": "centos",
+    "instance_type": "m3.medium",
+    "vertica_base1_ami": "ami-f23ebe88"
+}
+

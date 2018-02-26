@@ -1,0 +1,83 @@
+{
+  "variables": {
+    "ami_name": "Vertica Server {{user `build_number`}}",
+    "aws_access_key": "",
+    "aws_secret_key": "",
+    "vertica_version": "",
+    "build_number": "unknown",
+    "vertica_base1_ami": "",
+    "instance_type": "",
+    "vpc_id": "",
+    "subnet_id": "",
+    "secgrp_id": ""
+  },
+
+  "builders": [
+    {
+      "type": "amazon-ebs",
+      "ssh_pty": "true",
+      "access_key": "{{user `aws_access_key`}}",
+      "secret_key": "{{user `aws_secret_key`}}",
+      "region": "us-east-1",
+      "source_ami": "{{user `vertica_base1_ami`}}",
+      "instance_type": "{{user `instance_type`}}",
+      "ssh_username": "{{user `ssh_username`}}",
+      "ami_name": "Vertica {{user `vertica_version`}} {{user `os_name`}} {{user `os_version`}} - {{timestamp}}",
+      "security_group_id": "{{user `secgrp_id`}}",
+      "subnet_id": "{{user `subnet_id`}}",
+      "vpc_id": "{{user `vpc_id`}}",
+      "enhanced_networking": "true",
+      "associate_public_ip_address": "true",
+      "tags": 
+        {
+            "OS": "{{user `os_name`}}",
+            "OS Version": "{{user `os_version`}}",
+            "Name": "Vertica Analytic Database {{user `vertica_version`}}",
+            "Build": "{{user `build_number`}}"
+        }
+    }
+  ],
+
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "provisioners/fragment.rc.local.common",
+      "destination": "fragment.rc.local"
+    },         
+    {
+      "type": "file",
+      "source": "provisioners/fragment.rc.local.{{user `os_distro_id`}}",
+      "destination": "fragment.rc.local.platform"
+    },         
+    {
+      "type": "file",
+      "source": "provisioners/fragment.sysctl.conf",
+      "destination": "fragment.sysctl.conf"
+    }, 
+    {
+      "type": "file",
+      "source": "provisioners/motd",
+      "destination": "motd"
+    },
+    {
+      "type": "file",
+      "source": "rpms.server/",
+      "destination": "."
+    },         
+    {
+      "type": "shell",
+      "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E '{{ .Path }}'",
+      "scripts": [
+        "provisioners/common_install_update_software.sh",
+        "provisioners/server_install_update_software.sh",
+        "provisioners/ec2/build_install_s3fs.sh",
+        "provisioners/ec2/install_awscli.sh",
+        "provisioners/common_prepare_platform.sh",
+        "provisioners/server_install_rpms.sh",  
+        "provisioners/common_create_dbadmin.sh",
+        "provisioners/ec2/cloudwatch_monitor_scripts.sh",
+        "provisioners/common_cleanup.sh"
+        ]
+    }
+  ]
+}

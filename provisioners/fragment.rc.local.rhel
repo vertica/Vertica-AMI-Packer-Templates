@@ -1,0 +1,5 @@
+[ -w /sys/block/xvda/queue/scheduler ] && echo deadline > /sys/block/xvda/queue/scheduler
+[ -b /dev/xvdb ] && /sbin/blockdev --setra 2048 /dev/xvdb
+[ -b /dev/xvdb1 ] && /sbin/blockdev --setra 2048 /dev/xvdb1
+
+
